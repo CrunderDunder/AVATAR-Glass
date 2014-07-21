@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Google Glass Camera Snapshot - sample app and utility class (current as of XE11) 
 
 This app provides a utility class, GlassSnapshotActivity, that you can pull into your Glass project if you want to take a snapshot.
@@ -10,3 +11,9 @@ The MainActivity class shows how to call the GlassSnapshotActivity. It uses the 
 
 Have fun. Feel free to drop me a line to suggest improvements, bug fixes and great places for coffee in NYC.
 
+=======
+AVATAR-Glass
+============
+
+Glass implemented with AVATAR
+>>>>>>> 518dc6954cb86beeb89a6df8423f1de47cd3719d
