@@ -4,9 +4,13 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
 import org.apache.commons.net.ftp.FTPClient;
 
 //This task uploads the media to the ftp server in the background
@@ -31,6 +35,9 @@ public class UploadToFTP extends AsyncTask<String, String, String> {
 
 			//Finds the file and gets the filename.
 			File file = new File(params[0]);
+			if (file.exists()) {
+				Log.v(TAG, "File exists in UtoFTP");			
+			}
 			String objectName = file.getName();
 			InputStream input = new FileInputStream(file);
 			//Saves the file to the ftp server

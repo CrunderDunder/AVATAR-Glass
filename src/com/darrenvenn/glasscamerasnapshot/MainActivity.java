@@ -3,6 +3,9 @@ package com.darrenvenn.glasscamerasnapshot;
 import java.io.File;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
+import com.google.android.gms.location.LocationClient;
+
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -28,7 +31,8 @@ public class MainActivity extends Activity {
 	// App responds to voice trigger "test the camera", takes a picture with GlassSnapshotActivity and then returns.
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private static final String IMAGE_FILE_NAME = "/sdcard/DCIM/Camera/ImageTest.jpg";
+	private static final String FILE_NAME = "" + System.currentTimeMillis() + "_P.jpg";
+	private static final String IMAGE_FILE_PATH = "/sdcard/DCIM/Camera/" + FILE_NAME;
 
 	private boolean picTaken = false; // flag to indicate if we just returned from the picture taking intent
 	private TextView text1;
@@ -180,7 +184,7 @@ public class MainActivity extends Activity {
 		
 		if (!picTaken) {
 			Intent intent = new Intent(this, GlassSnapshotActivity.class);
-	        intent.putExtra("imageFileName",IMAGE_FILE_NAME);
+	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
 	        intent.putExtra("previewWidth", 640);
 	        intent.putExtra("previewHeight", 360);
 	        intent.putExtra("snapshotWidth", 1280);
@@ -267,11 +271,12 @@ public class MainActivity extends Activity {
 	        // TODO Extract the data returned from the child Activity.
 	    	  Log.v(TAG,"onActivityResult"); 
 	    	  
-	    	  File f = new File(IMAGE_FILE_NAME);
+	    	  File f = new File(IMAGE_FILE_PATH);
 			   if (f.exists()) {
 				   Log.v(TAG,"image file from camera was found");
+				   Log.v(TAG,"File direcotyr: " + f.getAbsolutePath());
 				   
-				   Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_NAME);
+				   Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_PATH);
 		    	   Log.v(TAG,"bmp width=" + b.getWidth() + " height=" + b.getHeight());
 				   ImageView image = (ImageView) findViewById(R.id.bgPhoto);
 			       image.setImageBitmap(b);
@@ -279,12 +284,12 @@ public class MainActivity extends Activity {
 			       text1 = (TextView) findViewById(R.id.text1);
 			       text2 = (TextView) findViewById(R.id.text2);
 			       text1.setText("The image shown was saved successfully to a file named:");
-			       text2.setText("\n" + IMAGE_FILE_NAME);
+			       text2.setText("\n" + IMAGE_FILE_PATH);
 			       
 			       Log.v(TAG, "Starting upload");
 			       UploadToFTP ftp = new UploadToFTP();
 			       Log.v(TAG, "File Path: " + Environment.getExternalStorageDirectory()); 
-			       ftp.execute(IMAGE_FILE_NAME);
+			       ftp.execute(IMAGE_FILE_PATH);
 			       
 			       LinearLayout llResult = (LinearLayout) findViewById(R.id.resultLinearLayout);
 			       llResult.setVisibility(View.VISIBLE);
