@@ -3,9 +3,11 @@ package com.darrenvenn.glasscamerasnapshot;
 import java.io.File;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
-import com.google.android.gms.location.LocationClient;
 
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -26,13 +28,14 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements LocationListener {
 	
 	// App responds to voice trigger "test the camera", takes a picture with GlassSnapshotActivity and then returns.
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private static final String FILE_NAME = "" + System.currentTimeMillis() + "_P.jpg";
-	private static final String IMAGE_FILE_PATH = "/sdcard/DCIM/Camera/" + FILE_NAME;
+	private static final String FILE_NAME = "" + System.currentTimeMillis() + ".jpg";
+	private static final String IMAGE_FILE_PATH = Environment.getExternalStorageDirectory().getPath() + 
+													"/DCIM/Camera/" + FILE_NAME;
 
 	private boolean picTaken = false; // flag to indicate if we just returned from the picture taking intent
 	private TextView text1;
@@ -45,6 +48,11 @@ public class MainActivity extends Activity {
 	private TextToSpeech mSpeech;
     
     private GestureDetector mGestureDetector;
+    
+    @SuppressWarnings("unused")
+	private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
+    private Criteria criteria;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +73,31 @@ public class MainActivity extends Activity {
         llResult.setVisibility(View.INVISIBLE);
         tvResult.setVisibility(View.INVISIBLE);
 		myProgressBar.setVisibility(View.INVISIBLE);
+		
+		//Get Location and stuff
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+	    criteria = new Criteria();
+	    criteria.setAccuracy(Criteria.ACCURACY_FINE);
+	    
+//	    List<String> providers = mLocationManager.getProviders(criteria, true);
+//	    Log.v(TAG, "Providers: " + providers.size());
+//	    for (String provider : providers) {
+//	    	if (mLocationManager.isProviderEnabled(provider)) {
+//	    		Log.v(TAG, "Provider: " + provider + " enabled");
+//	    	} else {
+//	    		Log.v(TAG, "Provider: " + provider + " disabled");
+//	    	}
+//	    	Log.v(TAG, "This provider is: " + provider.toString());
+//	    	Location location = mLocationManager.getLastKnownLocation(provider);
+//	    	if (location != null) {
+//	    		Log.v(TAG, "Latitude: " + location.getLatitude());
+//	    		Log.v(TAG, "Longitude: " + location.getLongitude());
+//	    		break;
+//	    	} else {
+//	    		Log.v(TAG, "Location is Empty");
+//	    	}
+//	    }
+		
         
         // Even though the text-to-speech engine is only used in response to a menu action, we
         // initialize it when the application starts so that we avoid delays that could occur
@@ -90,105 +123,14 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-		// Here we launch our intent to take  the snapshot.
-		// You must specify the file name that you wish the image to be saved as (imageFileName), in the extras for the intent,
-		// along with the maximum amount of time to wish to wait to acquire the camera (maximumWaitTimeForCamera - time in 
-		// milliseconds, e.g. 2000 = 2 seconds). This is done because the first call to get the camera does not always 
-		// work (especially when the app is responding to a voice trigger) so repeated calls are made until the camera is
-		// acquired or we give up.
-		// You must also specify the width and height of the preview image to show, and also the width and height of the
-		// image to be saved from the camera (Snapshot width and height). Valid values are as follows:
-		//
-		//Preview Sizes
-		//width=1920	height=1080
-		//width=1280	height=960
-		//width=1280	height=720
-		//width=1024	height=768
-		//width=1024	height=576
-		//width=960	height=720
-		//width=800	height=480
-		//width=768	height=576
-		//width=720	height=576
-		//width=720	height=480
-		//width=640	height=480
-		//width=640	height=368
-		//width=640	height=360
-		//width=512	height=384
-		//width=512	height=288
-		//width=416	height=304
-		//width=416	height=240
-		//width=352	height=288
-		//width=320	height=240
-		//width=320	height=192
-		//width=256	height=144
-		//width=240	height=160
-		//width=224	height=160
-		//width=176	height=144
-		//width=960	height=1280
-		//width=720	height=1280
-		//width=768	height=1024
-		//width=576	height=1024
-		//width=720	height=960
-		//width=480	height=800
-		//width=576	height=768
-		//width=576	height=720
-		//width=480	height=720
-		//width=480	height=640
-		//width=368	height=640
-		//width=384	height=512
-		//width=288	height=512
-		//width=304	height=416
-		//width=240	height=416
-		//width=288	height=352
-		//width=240	height=320
-		//width=192	height=320
-		//width=144	height=256
-		//width=160	height=240
-		//width=160	height=224
-		//width=144	height=176
-		//
-		//Snapshot Sizes
-		//width=2592	height=1944
-		//width=2560	height=1888
-		//width=2528	height=1856
-		//width=2592	height=1728
-		//width=2592	height=1458
-		//width=2560	height=1888
-		//width=2400	height=1350
-		//width=2304	height=1296
-		//width=2240	height=1344
-		//width=2160	height=1440
-		//width=2112	height=1728
-		//width=2112	height=1188
-		//width=2048	height=1152
-		//width=2048	height=1536
-		//width=2016	height=1512
-		//width=2016	height=1134
-		//width=2000	height=1600
-		//width=1920	height=1080
-		//width=1600	height=1200
-		//width=1600	height=900
-		//width=1536	height=864
-		//width=1408	height=792
-		//width=1344	height=756
-		//width=1296	height=972
-		//width=1280	height=1024
-		//width=1280	height=720
-		//width=1152	height=864
-		//width=1280	height=960
-		//width=1024	height=768
-		//width=1024	height=576
-		//width=640	height=480
-		//width=320	height=240
-		
+
 		if (!picTaken) {
 			Intent intent = new Intent(this, GlassSnapshotActivity.class);
 	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
 	        intent.putExtra("previewWidth", 640);
 	        intent.putExtra("previewHeight", 360);
-	        intent.putExtra("snapshotWidth", 1280);
-	        intent.putExtra("snapshotHeight", 720);
+	        intent.putExtra("snapshotWidth", 1920);
+	        intent.putExtra("snapshotHeight", 1080);
 	        intent.putExtra("maximumWaitTimeForCamera", 2000);
 		    startActivityForResult(intent,1);
 		}
@@ -268,38 +210,48 @@ public class MainActivity extends Activity {
 	  switch(requestCode) {
 	    case (1) : {
 	      if (resultCode == Activity.RESULT_OK) {
-	        // TODO Extract the data returned from the child Activity.
 	    	  Log.v(TAG,"onActivityResult"); 
 	    	  
 	    	  File f = new File(IMAGE_FILE_PATH);
-			   if (f.exists()) {
-				   Log.v(TAG,"image file from camera was found");
-				   Log.v(TAG,"File direcotyr: " + f.getAbsolutePath());
+	    	  if (f.exists()) {
+	    		  Log.v(TAG,"image file from camera was found");
+				  Log.v(TAG,"File direcotyr: " + f.getAbsolutePath());
 				   
-				   Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_PATH);
-		    	   Log.v(TAG,"bmp width=" + b.getWidth() + " height=" + b.getHeight());
-				   ImageView image = (ImageView) findViewById(R.id.bgPhoto);
-			       image.setImageBitmap(b);
-			       
-			       text1 = (TextView) findViewById(R.id.text1);
-			       text2 = (TextView) findViewById(R.id.text2);
-			       text1.setText("The image shown was saved successfully to a file named:");
-			       text2.setText("\n" + IMAGE_FILE_PATH);
-			       
-			       Log.v(TAG, "Starting upload");
-			       UploadToFTP ftp = new UploadToFTP();
-			       Log.v(TAG, "File Path: " + Environment.getExternalStorageDirectory()); 
-			       ftp.execute(IMAGE_FILE_PATH);
-			       
-			       LinearLayout llResult = (LinearLayout) findViewById(R.id.resultLinearLayout);
-			       llResult.setVisibility(View.VISIBLE);
-			       TextView line1 = (TextView) findViewById(R.id.titleOfWork);
-			       TextView line2 = (TextView) findViewById(R.id.Singer);
-			       TextView tap = (TextView) findViewById(R.id.tap_instruction);
-			       line1.setText("");
-			       line2.setText("");
-			       tap.setVisibility(View.VISIBLE);
-			   }
+				  //Gets image and previews it
+				  Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_PATH);
+		    	  Log.v(TAG,"bmp width=" + b.getWidth() + " height=" + b.getHeight());
+				  ImageView image = (ImageView) findViewById(R.id.bgPhoto);
+			      image.setImageBitmap(b);
+			      
+			      //Sets text for card
+			      text1 = (TextView) findViewById(R.id.text1);
+			      text2 = (TextView) findViewById(R.id.text2);
+			      text1.setText("The image shown was saved successfully to a file named:");
+			      text2.setText("\n" + IMAGE_FILE_PATH);
+			      
+			      //Sets layout and text on card
+			      LinearLayout llResult = (LinearLayout) findViewById(R.id.resultLinearLayout);
+			      llResult.setVisibility(View.VISIBLE);
+			      TextView line1 = (TextView) findViewById(R.id.titleOfWork);
+			      TextView line2 = (TextView) findViewById(R.id.Singer);
+			      TextView tap = (TextView) findViewById(R.id.tap_instruction);
+			      line1.setText("");
+			      line2.setText("");
+			      tap.setVisibility(View.VISIBLE);
+			      
+//			      //Uploads to FTP server
+//			      Log.v(TAG, "Starting  FTP upload");
+//			      UploadToFTP ftp = new UploadToFTP();
+//			      Log.v(TAG, "File Path: " + Environment.getExternalStorageDirectory()); 
+//			      ftp.execute(IMAGE_FILE_PATH);
+//			      Log.v(TAG, "Done FTP upload");
+			      
+			      //Try to do the same with http
+			      Log.v(TAG, "Starting POST upload");
+			      UploadHttpPost client = new UploadHttpPost();
+			      client.execute(IMAGE_FILE_PATH);
+			      
+	    	  }
 	      }
 	      else {
 	    	  Log.v(TAG,"onActivityResult returned bad result code");
@@ -322,5 +274,29 @@ public class MainActivity extends Activity {
         }
         super.onDestroy();
     }
+
+	@Override
+	public void onLocationChanged(Location location) {
+		if (mLocationListener != null) {
+			mLocationListener.onLocationChanged(location);
+			Log.v(TAG, "Latitude: " + location.getLatitude());
+			Log.v(TAG, "Longitude: " + location.getLongitude());
+		}
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		
+	}
 	
 }
