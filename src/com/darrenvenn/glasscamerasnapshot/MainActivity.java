@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -125,14 +126,18 @@ public class MainActivity extends Activity implements LocationListener {
 		super.onResume();
 
 		if (!picTaken) {
-			Intent intent = new Intent(this, GlassSnapshotActivity.class);
-	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
-	        intent.putExtra("previewWidth", 640);
-	        intent.putExtra("previewHeight", 360);
-	        intent.putExtra("snapshotWidth", 1920);
-	        intent.putExtra("snapshotHeight", 1080);
-	        intent.putExtra("maximumWaitTimeForCamera", 2000);
-		    startActivityForResult(intent,1);
+			//Temporary disable to test video
+//			Intent intent = new Intent(this, GlassSnapshotActivity.class);
+//	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
+//	        intent.putExtra("previewWidth", 640);
+//	        intent.putExtra("previewHeight", 360);
+//	        intent.putExtra("snapshotWidth", 1920);
+//	        intent.putExtra("snapshotHeight", 1080);
+//	        intent.putExtra("maximumWaitTimeForCamera", 2000);
+//		    startActivityForResult(intent,1);
+			
+			Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+			startActivityForResult(intent, 2);
 		}
 		else {
 			// do nothing
@@ -205,61 +210,68 @@ public class MainActivity extends Activity implements LocationListener {
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-	  super.onActivityResult(requestCode, resultCode, data);
-	  picTaken = true;
-	  switch(requestCode) {
-	    case (1) : {
-	      if (resultCode == Activity.RESULT_OK) {
-	    	  Log.v(TAG,"onActivityResult"); 
+		super.onActivityResult(requestCode, resultCode, data);
+		picTaken = true;
+		switch(requestCode) {
+	    	case (1) : {
+	    		if (resultCode == Activity.RESULT_OK) {
+	    			Log.v(TAG,"onActivityResult"); 
 	    	  
-	    	  File f = new File(IMAGE_FILE_PATH);
-	    	  if (f.exists()) {
-	    		  Log.v(TAG,"image file from camera was found");
-				  Log.v(TAG,"File direcotyr: " + f.getAbsolutePath());
-				   
-				  //Gets image and previews it
-				  Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_PATH);
-		    	  Log.v(TAG,"bmp width=" + b.getWidth() + " height=" + b.getHeight());
-				  ImageView image = (ImageView) findViewById(R.id.bgPhoto);
-			      image.setImageBitmap(b);
+	    			File f = new File(IMAGE_FILE_PATH);
+	    			if (f.exists()) {
+	    				Log.v(TAG,"image file from camera was found");
+	    				Log.v(TAG,"File direcotyr: " + f.getAbsolutePath());
+					   
+	    				//Gets image and previews it
+	    				Bitmap b = BitmapFactory.decodeFile(IMAGE_FILE_PATH);
+	    				Log.v(TAG,"bmp width=" + b.getWidth() + " height=" + b.getHeight());
+	    				ImageView image = (ImageView) findViewById(R.id.bgPhoto);
+	    				image.setImageBitmap(b);
+				      
+	    				//Sets text for card
+	    				text1 = (TextView) findViewById(R.id.text1);
+	    				text2 = (TextView) findViewById(R.id.text2);
+	    				text1.setText("The image shown was saved successfully to a file named:");
+	    				text2.setText("\n" + IMAGE_FILE_PATH);
+				      
+	    				//Sets layout and text on card
+	    				LinearLayout llResult = (LinearLayout) findViewById(R.id.resultLinearLayout);
+	    				llResult.setVisibility(View.VISIBLE);
+	    				TextView line1 = (TextView) findViewById(R.id.titleOfWork);
+	    				TextView line2 = (TextView) findViewById(R.id.Singer);
+	    				TextView tap = (TextView) findViewById(R.id.tap_instruction);
+	    				line1.setText("");
+	    				line2.setText("");
+	    				tap.setVisibility(View.VISIBLE);
+				      
+	//			  	    //Uploads to FTP server
+	//			  	    Log.v(TAG, "Starting  FTP upload");
+	//			  	    UploadToFTP ftp = new UploadToFTP();
+	//			  	    Log.v(TAG, "File Path: " + Environment.getExternalStorageDirectory()); 
+	//			  	    ftp.execute(IMAGE_FILE_PATH);
+	//			  	    Log.v(TAG, "Done FTP upload");
+				      
+	    				//Try to do the same with http
+	    				Log.v(TAG, "Starting POST upload");
+	    				UploadHttpPost client = new UploadHttpPost();
+	    				client.execute(IMAGE_FILE_PATH);
 			      
-			      //Sets text for card
-			      text1 = (TextView) findViewById(R.id.text1);
-			      text2 = (TextView) findViewById(R.id.text2);
-			      text1.setText("The image shown was saved successfully to a file named:");
-			      text2.setText("\n" + IMAGE_FILE_PATH);
-			      
-			      //Sets layout and text on card
-			      LinearLayout llResult = (LinearLayout) findViewById(R.id.resultLinearLayout);
-			      llResult.setVisibility(View.VISIBLE);
-			      TextView line1 = (TextView) findViewById(R.id.titleOfWork);
-			      TextView line2 = (TextView) findViewById(R.id.Singer);
-			      TextView tap = (TextView) findViewById(R.id.tap_instruction);
-			      line1.setText("");
-			      line2.setText("");
-			      tap.setVisibility(View.VISIBLE);
-			      
-//			      //Uploads to FTP server
-//			      Log.v(TAG, "Starting  FTP upload");
-//			      UploadToFTP ftp = new UploadToFTP();
-//			      Log.v(TAG, "File Path: " + Environment.getExternalStorageDirectory()); 
-//			      ftp.execute(IMAGE_FILE_PATH);
-//			      Log.v(TAG, "Done FTP upload");
-			      
-			      //Try to do the same with http
-			      Log.v(TAG, "Starting POST upload");
-			      UploadHttpPost client = new UploadHttpPost();
-			      client.execute(IMAGE_FILE_PATH);
-			      
-	    	  }
-	      }
-	      else {
-	    	  Log.v(TAG,"onActivityResult returned bad result code");
-	    	  finish();
-	      }
-	      break;
-	    } 
-	  }
+	    			}
+	    		} else {
+	    			Log.v(TAG,"onActivityResult returned bad result code");
+	    			finish();
+	    		}
+	    		break;
+	    	} 
+	    	case (2) : {
+	    		if (resultCode == RESULT_OK) {
+	    			Log.v(TAG, "Video response ok");
+	    		} else {
+	    			Log.v(TAG, "Video response not ok");
+	    		}
+	    		break;
+	    	}
+		}
 	}
 	
 	@Override
