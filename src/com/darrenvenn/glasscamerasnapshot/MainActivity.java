@@ -1,6 +1,9 @@
 package com.darrenvenn.glasscamerasnapshot;
 
 import java.io.File;
+import java.util.List;
+
+import com.google.android.glass.media.CameraManager;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
 
@@ -10,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileObserver;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.app.Activity;
@@ -29,7 +33,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements LocationListener {
+public class MainActivity extends Activity{
 	
 	// App responds to voice trigger "test the camera", takes a picture with GlassSnapshotActivity and then returns.
 	
@@ -50,10 +54,10 @@ public class MainActivity extends Activity implements LocationListener {
     
     private GestureDetector mGestureDetector;
     
-    @SuppressWarnings("unused")
-	private LocationManager mLocationManager;
-    private LocationListener mLocationListener;
-    private Criteria criteria;
+	//Another location detection method
+    LocationDetector myloc;
+	double myLat = 0;
+	double myLong = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,30 +79,8 @@ public class MainActivity extends Activity implements LocationListener {
         tvResult.setVisibility(View.INVISIBLE);
 		myProgressBar.setVisibility(View.INVISIBLE);
 		
-		//Get Location and stuff
-		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-	    criteria = new Criteria();
-	    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-	    
-//	    List<String> providers = mLocationManager.getProviders(criteria, true);
-//	    Log.v(TAG, "Providers: " + providers.size());
-//	    for (String provider : providers) {
-//	    	if (mLocationManager.isProviderEnabled(provider)) {
-//	    		Log.v(TAG, "Provider: " + provider + " enabled");
-//	    	} else {
-//	    		Log.v(TAG, "Provider: " + provider + " disabled");
-//	    	}
-//	    	Log.v(TAG, "This provider is: " + provider.toString());
-//	    	Location location = mLocationManager.getLastKnownLocation(provider);
-//	    	if (location != null) {
-//	    		Log.v(TAG, "Latitude: " + location.getLatitude());
-//	    		Log.v(TAG, "Longitude: " + location.getLongitude());
-//	    		break;
-//	    	} else {
-//	    		Log.v(TAG, "Location is Empty");
-//	    	}
-//	    }
-		
+
+		myloc = new LocationDetector(this);		
         
         // Even though the text-to-speech engine is only used in response to a menu action, we
         // initialize it when the application starts so that we avoid delays that could occur
@@ -123,21 +105,28 @@ public class MainActivity extends Activity implements LocationListener {
 	
 	@Override
 	protected void onResume() {
+		Log.v(TAG, "In onResume");
 		super.onResume();
 
 		if (!picTaken) {
 			//Temporary disable to test video
-//			Intent intent = new Intent(this, GlassSnapshotActivity.class);
-//	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
-//	        intent.putExtra("previewWidth", 640);
-//	        intent.putExtra("previewHeight", 360);
-//	        intent.putExtra("snapshotWidth", 1920);
-//	        intent.putExtra("snapshotHeight", 1080);
-//	        intent.putExtra("maximumWaitTimeForCamera", 2000);
-//		    startActivityForResult(intent,1);
+			Intent intent = new Intent(this, GlassSnapshotActivity.class);
+	        intent.putExtra("imageFileName",IMAGE_FILE_PATH);
+	        intent.putExtra("previewWidth", 640);
+	        intent.putExtra("previewHeight", 360);
+	        intent.putExtra("snapshotWidth", 1920);
+	        intent.putExtra("snapshotHeight", 1080);
+	        intent.putExtra("maximumWaitTimeForCamera", 2000);
+		    startActivityForResult(intent,1);
 			
-			Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-			startActivityForResult(intent, 2);
+			//Video intent works
+//			Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+//			startActivityForResult(intent, 2);
+			
+//			Log.v(TAG, "Before Intent");
+//			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//			startActivityForResult(intent, 3);
+//			Log.v(TAG, "After startActivityForResult");
 		}
 		else {
 			// do nothing
@@ -210,6 +199,7 @@ public class MainActivity extends Activity implements LocationListener {
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.v(TAG, "In onActivityResult");
 		super.onActivityResult(requestCode, resultCode, data);
 		picTaken = true;
 		switch(requestCode) {
@@ -257,6 +247,11 @@ public class MainActivity extends Activity implements LocationListener {
 	    				client.execute(IMAGE_FILE_PATH);
 			      
 	    			}
+	    			if (myloc.canGetLocation) {
+	    				myLat = myloc.getLatitude();
+	    				myLong = myloc.getLongitude();
+	    				Log.v(TAG, "Location data: " + Double.toString(myLat) + " : " + Double.toString(myLong));
+	    			}
 	    		} else {
 	    			Log.v(TAG,"onActivityResult returned bad result code");
 	    			finish();
@@ -271,9 +266,67 @@ public class MainActivity extends Activity implements LocationListener {
 	    		}
 	    		break;
 	    	}
+	    	case (3) : {
+	    		Log.v(TAG, "In case: 3");
+	    		if (resultCode == RESULT_OK) {
+	    			Log.v(TAG, "Picture response ok");
+	    			String picturePath = data.getStringExtra(CameraManager.EXTRA_PICTURE_FILE_PATH);
+	    			processPictureWhenReady(picturePath);
+	    		} else {
+	    			Log.v(TAG, "Picture response not ok");
+	    		}
+	    	}
 		}
 	}
 	
+	private void processPictureWhenReady(final String picturePath) {
+		Log.v(TAG, "In processPicture");
+		// TODO Auto-generated method stub
+		final File pictureFile = new File(picturePath);
+
+	    if (pictureFile.exists()) {
+	        // The picture is ready; process it.
+	    } else {
+	        // The file does not exist yet. Before starting the file observer, you
+	        // can update your UI to let the user know that the application is
+	        // waiting for the picture (for example, by displaying the thumbnail
+	        // image and a progress indicator).
+
+	        final File parentDirectory = pictureFile.getParentFile();
+	        FileObserver observer = new FileObserver(parentDirectory.getPath(),
+	                FileObserver.CLOSE_WRITE | FileObserver.MOVED_TO) {
+	            // Protect against additional pending events after CLOSE_WRITE
+	            // or MOVED_TO is handled.
+	            private boolean isFileWritten;
+
+	            @Override
+	            public void onEvent(int event, String path) {
+	                if (!isFileWritten) {
+	                    // For safety, make sure that the file that was created in
+	                    // the directory is actually the one that we're expecting.
+	                    File affectedFile = new File(parentDirectory, path);
+	                    isFileWritten = affectedFile.equals(pictureFile);
+
+	                    if (isFileWritten) {
+	                        stopWatching();
+
+	                        // Now that the file is ready, recursively call
+	                        // processPictureWhenReady again (on the UI thread).
+	                        runOnUiThread(new Runnable() {
+	                            @Override
+	                            public void run() {
+	                                processPictureWhenReady(picturePath);
+	                            }
+	                        });
+	                    }
+	                }
+	            }
+	        };
+	        observer.startWatching();
+	    }
+	    Log.v(TAG, "End of processPicture");
+	}
+
 	@Override
     protected void onDestroy() {
 
@@ -285,30 +338,5 @@ public class MainActivity extends Activity implements LocationListener {
             Log.d(TAG, "TTS Destroyed");
         }
         super.onDestroy();
-    }
-
-	@Override
-	public void onLocationChanged(Location location) {
-		if (mLocationListener != null) {
-			mLocationListener.onLocationChanged(location);
-			Log.v(TAG, "Latitude: " + location.getLatitude());
-			Log.v(TAG, "Longitude: " + location.getLongitude());
-		}
-	}
-
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-		
-	}
-
-	@Override
-	public void onProviderEnabled(String provider) {
-		
-	}
-
-	@Override
-	public void onProviderDisabled(String provider) {
-		
-	}
-	
+    }	
 }
