@@ -1,16 +1,11 @@
 package com.darrenvenn.glasscamerasnapshot;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -22,6 +17,8 @@ import android.os.Handler;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -40,6 +37,10 @@ public class RecordAudio extends Activity {
 	private short[] mAudioBuffer;
 	
     private AudioManager mAudioManager;
+    
+    String filename = "" + System.currentTimeMillis() + ".pcm";
+    String filepath = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/";
+    FileOutputStream fos = null;
 	
 	private final GestureDetector.BaseListener mBaseListener = new GestureDetector.BaseListener() {
 		
@@ -59,6 +60,7 @@ public class RecordAudio extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Log.v(TAG, "RecordAudio onCreate");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_record_audio);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -69,6 +71,19 @@ public class RecordAudio extends Activity {
         mBufferSize = AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
         mAudioBuffer = new short[mBufferSize / 2];
+        
+        File file = new File(filepath + filename);
+        if (file.exists()) {
+        	Log.v(TAG, "File exists Audiorecord");
+        } else {
+        	Log.v(TAG, "File doens't esiojiost");
+        }
+        
+        try {
+        	fos = new FileOutputStream(filepath + filename);
+        } catch (FileNotFoundException e) {
+        	e.printStackTrace();
+        }
 	}
 
 	@Override
@@ -84,6 +99,7 @@ public class RecordAudio extends Activity {
 	
     @Override
     protected void onResume() {
+    	Log.v(TAG, "RecordAudio onResume");
         super.onResume();
 
         mRecordingThread = new RecordingThread();
@@ -92,6 +108,7 @@ public class RecordAudio extends Activity {
 
     @Override
     protected void onPause() {
+    	Log.v(TAG, "RecordAudio onPause");
         super.onPause();
 
         if (mRecordingThread != null) {
@@ -102,6 +119,7 @@ public class RecordAudio extends Activity {
     
     @Override
     protected void onDestroy() {
+    	Log.v(TAG, "RecordAudio onDestroy");
     	if (mRecordingThread != null) {
             mRecordingThread.stopRunning();
             mRecordingThread = null;
@@ -117,6 +135,7 @@ public class RecordAudio extends Activity {
 	}
 
     private void stopRecording() {
+    	Log.v(TAG, "RecordAudio stopRecording");
 		// TODO Auto-generated method stub
     	if (mRecordingThread != null) {
             mRecordingThread.stopRunning();
@@ -125,14 +144,6 @@ public class RecordAudio extends Activity {
     	finish();
 		
 	}
-    
-	private void startRecording() {
-		// TODO Auto-generated method stub
-	}
-
-
-
-
 	/**
      * A background thread that receives audio from the microphone and sends it to the waveform
      * visualizing view.
@@ -140,48 +151,53 @@ public class RecordAudio extends Activity {
     private class RecordingThread extends Thread {
 
         private boolean mShouldContinue = true;
-        DataOutputStream dos;
 
         @Override
         public void run() {
+        	Log.v(TAG, "RecordAudio in run Thread");
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
             AudioRecord record = new AudioRecord(AudioSource.MIC, SAMPLING_RATE,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mBufferSize);
+            Log.v(TAG, "RecordAudio started recording");
+            
+
             record.startRecording();
             
-            String filename = "" + System.currentTimeMillis() + ".pcm";
-            String filepath = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/Audio/";
-            File file = new File(filepath + filename);
-            OutputStream os;
-			try {
-				os = new FileOutputStream(file);
-	            BufferedOutputStream bos = new BufferedOutputStream(os);
-	            dos = new DataOutputStream(bos);
-	            while (shouldContinue()) {
-	            	int bufferReadResult = record.read(mAudioBuffer,  0, mBufferSize / 2);
-	            	for (int i = 0; i < bufferReadResult; i++) {
-	            		dos.writeShort(mAudioBuffer[i]);
-	            	}
-	            }
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+            while (shouldContinue()) {
+            	record.read(mAudioBuffer, 0, mBufferSize / 2);
+            	try {
+            		byte bData[] = short2byte(mAudioBuffer);
+            		fos.write(bData, 0, mBufferSize);
+            	} catch (IOException e) {
+            		e.printStackTrace();
+            	}
+            }
+            
+            try {
+            	fos.close();
+            } catch (IOException e) {
+            	e.printStackTrace();
+            }
+            
             	
 
 
             record.stop();
             record.release();
-            try {
-            	dos.close();
-            } catch (IOException e) {
-            	e.printStackTrace();
-            }
         }
+        
+        private byte[] short2byte(short[] sData) {
+    		int shortArrsize = sData.length;
+    		byte[] bytes = new byte[shortArrsize * 2];
+
+    		for (int i = 0; i < shortArrsize; i++) {
+    			bytes[i * 2] = (byte) (sData[i] & 0x00FF);
+    			bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
+    			sData[i] = 0;
+    		}
+    		return bytes;
+    	}
 
         /**
          * Gets a value indicating whether the thread should continue running.

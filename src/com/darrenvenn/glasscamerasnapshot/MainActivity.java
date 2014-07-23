@@ -36,6 +36,8 @@ public class MainActivity extends Activity{
 													"/DCIM/Camera/Images/";
 	private static final String VIDEO_PATH = Environment.getExternalStorageDirectory().getPath() + 
 													"/DCIM/Camera/Videos/";
+	private static final String AUDIO_PATH = Environment.getExternalStorageDirectory().getPath() + 
+													"/DCIM/Camera/Audio/";
 
 	private final Handler mHandler = new Handler();
 	
@@ -219,6 +221,19 @@ public class MainActivity extends Activity{
 //        
 //        mRecordingThread = new RecordingThread();
 //        mRecordingThread.start();
+		String tmpfolderpath = Environment.getExternalStorageDirectory()
+				+ File.separator + Environment.DIRECTORY_PICTURES
+				+ File.separator + "CuXtomCamera";
+		File dir = new File(tmpfolderpath);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		File f = new File(dir, "tempname.jpg");
+		if (f.exists()) {
+			Log.v(TAG, "MAIN ACTIVITY FILE EXISTS");
+		} else {
+			Log.v(TAG, "MAIN ACTIVITY FILE FAILED");
+		}
 		Intent intent = new Intent(getApplicationContext(), RecordAudio.class);
 		startActivityForResult(intent, 3);
 	}
