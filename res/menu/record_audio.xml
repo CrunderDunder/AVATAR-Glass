@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.darrenvenn.glasscamerasnapshot.RecordAudio" >
+
+    <item 
+        android:id="@+id/startrec"
+        android:title="@string/startrec"
+        android:icon="@drawable/ic_audio" />
+    <item
+        android:id="@+id/stoprec"
+        android:title="@string/stoprec"
+        android:icon="@drawable/ic_exit" />
+
+</menu>

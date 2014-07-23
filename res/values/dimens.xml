@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2014 The Android Open Source Project
+<!--
+     Copyright (C) 2014 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -19,15 +20,23 @@
     <!-- The standard margin used on the top, left, and right sides of a card. -->
     <dimen name="card_margin">40px</dimen>
 
-    <!-- The distance between the bottom of a card and the bottom of a tips-view, adjusted so
-         that the baseline of the text is 40px from the bottom of the card. -->
+    <!--
+         The distance between the bottom of a card and the bottom of a tips-view, adjusted so
+         that the baseline of the text is 40px from the bottom of the card.
+    -->
     <dimen name="tip_margin_bottom">33px</dimen>
 
-    <!-- The amount of space between the game state circles and the timer display in the status
-         bar. -->
+    <!--
+         The amount of space between the game state circles and the timer display in the status
+         bar.
+    -->
     <dimen name="timer_margin_left">40px</dimen>
 
     <!-- The amount of space between the icon and the phrase text on the result screen. -->
     <dimen name="result_icon_margin_right">20px</dimen>
+    <dimen name="footer_right_margin">40px</dimen>
+    <dimen name="footer_bottom_margin">29px</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 
 </resources>

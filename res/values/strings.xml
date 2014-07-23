@@ -5,7 +5,7 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="glass_voice_trigger">test the camera</string>
-    
+
     <!-- Menu item strings. -->
     <string name="stop">Done</string>
     <!-- Tip text displayed at the bottom of the splash screen. -->
@@ -15,5 +15,9 @@
     <string name="audio">Audio Clip</string>
     <string name="txt">Text File</string>
     <string name="exit">Exit</string>
+    <string name="decibel_format">%1$.1f dB</string>
+    <string name="title_activity_record_audio">RecordAudio</string>
+    <string name="startrec">Start Recording</string>
+    <string name="stoprec">Stop Recording</string>
 
 </resources>

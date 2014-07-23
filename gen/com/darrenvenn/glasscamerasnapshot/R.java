@@ -12,23 +12,35 @@ public final class R {
     }
     public static final class dimen {
         /** 
+         Example customization of dimensions originally defined in res/values/dimens.xml
+         (such as screen margins) for screens with more than 820dp of available width. This
+         would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
+    
+
          Customize dimensions originally defined in res/values/dimens.xml (such as
          screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
     
          */
-        public static final int activity_horizontal_margin=0x7f070004;
+        public static final int activity_horizontal_margin=0x7f070006;
+        public static final int activity_vertical_margin=0x7f070007;
         /**  The standard margin used on the top, left, and right sides of a card. 
          */
         public static final int card_margin=0x7f070000;
+        public static final int footer_bottom_margin=0x7f070005;
+        public static final int footer_right_margin=0x7f070004;
         /**  The amount of space between the icon and the phrase text on the result screen. 
          */
         public static final int result_icon_margin_right=0x7f070003;
-        /**  The amount of space between the game state circles and the timer display in the status
-         bar. 
+        /** 
+         The amount of space between the game state circles and the timer display in the status
+         bar.
+    
          */
         public static final int timer_margin_left=0x7f070002;
-        /**  The distance between the bottom of a card and the bottom of a tips-view, adjusted so
-         that the baseline of the text is 40px from the bottom of the card. 
+        /** 
+         The distance between the bottom of a card and the bottom of a tips-view, adjusted so
+         that the baseline of the text is 40px from the bottom of the card.
+    
          */
         public static final int tip_margin_bottom=0x7f070001;
     }
@@ -46,30 +58,37 @@ public final class R {
     }
     public static final class id {
         public static final int Singer=0x7f0a0008;
-        public static final int audio=0x7f0a000e;
+        public static final int audio=0x7f0a0010;
         public static final int bgPhoto=0x7f0a0002;
-        public static final int exit=0x7f0a0010;
+        public static final int decibel_view=0x7f0a000c;
+        public static final int exit=0x7f0a0012;
         public static final int imageView=0x7f0a0001;
-        public static final int img=0x7f0a000c;
+        public static final int img=0x7f0a000e;
         public static final int my_progressBar=0x7f0a0009;
         public static final int queryLinearLayout=0x7f0a0003;
         public static final int resultLinearLayout=0x7f0a0006;
+        public static final int startrec=0x7f0a0013;
+        public static final int stoprec=0x7f0a0014;
         public static final int surfaceView=0x7f0a0000;
         public static final int tap_instruction=0x7f0a000a;
         public static final int text1=0x7f0a0004;
         public static final int text2=0x7f0a0005;
-        public static final int tip_tap_for_options=0x7f0a000b;
+        public static final int tip_tap_for_options=0x7f0a000d;
         public static final int titleOfWork=0x7f0a0007;
-        public static final int txt=0x7f0a000f;
-        public static final int vid=0x7f0a000d;
+        public static final int txt=0x7f0a0011;
+        public static final int vid=0x7f0a000f;
+        public static final int waveform_view=0x7f0a000b;
     }
     public static final class layout {
         public static final int activity_camera=0x7f030000;
         public static final int activity_main=0x7f030001;
-        public static final int avatar_main=0x7f030002;
+        public static final int activity_record_audio=0x7f030002;
+        public static final int avatar_main=0x7f030003;
+        public static final int layout_audio=0x7f030004;
     }
     public static final class menu {
         public static final int main=0x7f090000;
+        public static final int record_audio=0x7f090001;
     }
     public static final class raw {
         public static final int camcorder=0x7f050000;
@@ -81,17 +100,21 @@ public final class R {
         public static final int action_settings=0x7f060002;
         public static final int app_name=0x7f060001;
         public static final int audio=0x7f060009;
+        public static final int decibel_format=0x7f06000c;
         public static final int exit=0x7f06000b;
         public static final int glass_voice_trigger=0x7f060004;
         public static final int hello_world=0x7f060003;
         public static final int img=0x7f060007;
         public static final int lib_name=0x7f060000;
+        public static final int startrec=0x7f06000e;
         /**  Menu item strings. 
          */
         public static final int stop=0x7f060005;
+        public static final int stoprec=0x7f06000f;
         /**  Tip text displayed at the bottom of the splash screen. 
          */
         public static final int tap_for_options=0x7f060006;
+        public static final int title_activity_record_audio=0x7f06000d;
         public static final int txt=0x7f06000a;
         public static final int vid=0x7f060008;
     }
