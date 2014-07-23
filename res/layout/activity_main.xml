@@ -89,6 +89,6 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_margin="20dp"
-        android:text="@string/tapforoptions"  />
+        android:text="@string/tap_for_options"  />
             
 </FrameLayout>

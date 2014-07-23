@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">GlassCameraSnapshot</string>
+    <string name="app_name">Avatar</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="glass_voice_trigger">test the camera</string>
     
     <!-- Menu item strings. -->
     <string name="stop">Done</string>
-    <string name="tapforoptions">Tap for options</string>
+    <!-- Tip text displayed at the bottom of the splash screen. -->
+    <string name="tap_for_options">Tap for options</string>
+    <string name="img">Image</string>
+    <string name="vid">Video Clip</string>
+    <string name="audio">Audio Clip</string>
+    <string name="txt">Text File</string>
+    <string name="exit">Exit</string>
 
 </resources>
