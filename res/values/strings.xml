@@ -19,5 +19,6 @@
     <string name="title_activity_record_audio">RecordAudio</string>
     <string name="startrec">Start Recording</string>
     <string name="stoprec">Stop Recording</string>
+    <string name="title_activity_record_speech">RecordSpeech</string>
 
 </resources>

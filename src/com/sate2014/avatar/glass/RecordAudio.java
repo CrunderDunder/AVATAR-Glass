@@ -1,34 +1,35 @@
-package com.darrenvenn.glasscamerasnapshot;
+package com.sate2014.avatar.glass;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-
-import com.google.android.glass.media.Sounds;
-import com.google.android.glass.touchpad.Gesture;
-import com.google.android.glass.touchpad.GestureDetector;
-
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 
+import com.darrenvenn.glasscamerasnapshot.R;
+import com.google.android.glass.media.Sounds;
+import com.google.android.glass.touchpad.Gesture;
+import com.google.android.glass.touchpad.GestureDetector;
+
 public class RecordAudio extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 
 	private static final int SAMPLING_RATE = 44100;
-	
-	private final Handler mHandler = new Handler();
+	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
+	int BytesPerElement = 2; // 2 bytes in 16bit format
 	
 	private WaveformView mWaveformView;
 	
@@ -38,9 +39,8 @@ public class RecordAudio extends Activity {
 	
     private AudioManager mAudioManager;
     
-    String filename = "" + System.currentTimeMillis() + ".pcm";
-    String filepath = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/";
-    FileOutputStream fos = null;
+    private String filename;
+    private String filepath;
 	
 	private final GestureDetector.BaseListener mBaseListener = new GestureDetector.BaseListener() {
 		
@@ -70,20 +70,18 @@ public class RecordAudio extends Activity {
 		mWaveformView = (WaveformView) findViewById(R.id.waveform_view);
         mBufferSize = AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
+        Log.v(TAG, "mBufferSize: " + mBufferSize);
         mAudioBuffer = new short[mBufferSize / 2];
         
-        File file = new File(filepath + filename);
-        if (file.exists()) {
-        	Log.v(TAG, "File exists Audiorecord");
-        } else {
-        	Log.v(TAG, "File doens't esiojiost");
+        Intent mainIntent = getIntent();
+        if (mainIntent.hasExtra("filename")) {
+        	filename = mainIntent.getStringExtra("filename");
         }
-        
-        try {
-        	fos = new FileOutputStream(filepath + filename);
-        } catch (FileNotFoundException e) {
-        	e.printStackTrace();
+        Log.v(TAG, "filename: " + filename);
+        if (mainIntent.hasExtra("filepath")) {
+        	filepath = mainIntent.getStringExtra("filepath");
         }
+        Log.v(TAG, "filepath: " + filepath);
 	}
 
 	@Override
@@ -136,13 +134,11 @@ public class RecordAudio extends Activity {
 
     private void stopRecording() {
     	Log.v(TAG, "RecordAudio stopRecording");
-		// TODO Auto-generated method stub
     	if (mRecordingThread != null) {
             mRecordingThread.stopRunning();
             mRecordingThread = null;
         }
-    	finish();
-		
+		finish();
 	}
 	/**
      * A background thread that receives audio from the microphone and sends it to the waveform
@@ -159,45 +155,63 @@ public class RecordAudio extends Activity {
 
             AudioRecord record = new AudioRecord(AudioSource.MIC, SAMPLING_RATE,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mBufferSize);
-            Log.v(TAG, "RecordAudio started recording");
-            
-
-            record.startRecording();
-            
-            while (shouldContinue()) {
-            	record.read(mAudioBuffer, 0, mBufferSize / 2);
-            	try {
-            		byte bData[] = short2byte(mAudioBuffer);
-            		fos.write(bData, 0, mBufferSize);
-            	} catch (IOException e) {
-            		e.printStackTrace();
-            	}
-            }
-            
             try {
+	            File dir = new File(filepath);
+	            if (!dir.exists()) {
+	            	dir.mkdirs();
+	            }
+	            File f =  new File(dir, filename+".pcm");
+	            FileOutputStream fos = new FileOutputStream(f);
+	            
+	            Log.v(TAG, "RecordAudio started recording");
+	            
+	
+	            
+	            record.startRecording();
+	            
+	            while (shouldContinue()) {
+//	            	Log.v(TAG, "In shouldContinue()");
+	            	record.read(mAudioBuffer, 0, mBufferSize / 2);   
+//	            	Log.v(TAG, "sData after read: "+mAudioBuffer.toString());
+	
+	            	mWaveformView.updateAudioData(mAudioBuffer);
+	            	
+            		byte bData[] = short2byte(mAudioBuffer);
+//            		fos.write(bData, 0, BufferElements2Rec * BytesPerElement);
+            		fos.write(bData);
+            		Log.v(TAG, "AFTER fos.write try");
+	            }
+	            
             	fos.close();
+            	Log.v(TAG, "After fos.close()");
+	
+	            record.stop();
+	            record.release();
+	            
+	            if (f.exists()) {
+	            	Log.v(TAG, "F exists.  Length: " + f.length());
+	            } else {
+	            	Log.v(TAG, "F no exisito");
+	            }
+            } catch (FileNotFoundException e) {
+            	e.printStackTrace();
             } catch (IOException e) {
             	e.printStackTrace();
             }
-            
-            	
-
-
-            record.stop();
-            record.release();
+            setResult(RESULT_OK);
         }
         
         private byte[] short2byte(short[] sData) {
-    		int shortArrsize = sData.length;
-    		byte[] bytes = new byte[shortArrsize * 2];
+            int shortArrsize = sData.length;
+            byte[] bytes = new byte[shortArrsize * 2];
+            for (int i = 0; i < shortArrsize; i++) {
+                bytes[i * 2] = (byte) (sData[i] & 0x00FF);
+                bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
+                sData[i] = 0;
+            }
+            return bytes;
 
-    		for (int i = 0; i < shortArrsize; i++) {
-    			bytes[i * 2] = (byte) (sData[i] & 0x00FF);
-    			bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
-    			sData[i] = 0;
-    		}
-    		return bytes;
-    	}
+        }
 
         /**
          * Gets a value indicating whether the thread should continue running.
@@ -212,7 +226,6 @@ public class RecordAudio extends Activity {
         public synchronized void stopRunning() {
             mShouldContinue = false;
         }
-
-
-    }
+        
+    }       
 }

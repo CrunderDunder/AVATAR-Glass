@@ -1,4 +1,4 @@
-package com.darrenvenn.glasscamerasnapshot;
+package com.sate2014.avatar.glass;
 
 import android.os.AsyncTask;
 import android.util.Log;
