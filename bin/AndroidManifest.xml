@@ -53,6 +53,10 @@
             android:name="com.sate2014.avatar.glass.RecordSpeech"
             android:label="@string/title_activity_record_speech" >
         </activity>
+        <activity
+            android:name="com.sate2014.avatar.glass.UploadToSQL"
+            android:label="@string/title_activity_upload_sql" >
+        </activity>
     </application>
 
 </manifest>

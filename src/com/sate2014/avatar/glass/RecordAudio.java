@@ -122,6 +122,7 @@ public class RecordAudio extends Activity {
             mRecordingThread.stopRunning();
             mRecordingThread = null;
         }
+        setResult(RESULT_OK);
     	super.onDestroy();
     	finish();
     	
@@ -138,6 +139,7 @@ public class RecordAudio extends Activity {
             mRecordingThread.stopRunning();
             mRecordingThread = null;
         }
+        setResult(RESULT_OK);
 		finish();
 	}
 	/**
@@ -198,7 +200,6 @@ public class RecordAudio extends Activity {
             } catch (IOException e) {
             	e.printStackTrace();
             }
-            setResult(RESULT_OK);
         }
         
         private byte[] short2byte(short[] sData) {

@@ -20,5 +20,14 @@
     <string name="startrec">Start Recording</string>
     <string name="stoprec">Stop Recording</string>
     <string name="title_activity_record_speech">RecordSpeech</string>
+    <string name="sqlupload">Uploading to Server</string>
+    <string name="tap_for_sqloptions">Tap to modify point</string>
+    <string name="avatar_name">AVATAR</string>
+    <string name="change_name">Change Name</string>
+    <string name="add_description">Add Description</string>
+    <string name="show_summary">Show Summary</string>
+    <string name="send">Send</string>
+    <string name="pt_summary_title">Point Summary</string>
+    <string name="title_activity_upload_sql">UploadToSQL</string>
 
 </resources>

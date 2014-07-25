@@ -22,11 +22,8 @@ public class UploadToFTP extends AsyncTask<String, String, String> {
 		String retVal = params[0];
 		try {
 			//Connects and logs into the server
-			ftpClient.connect("10.0.3.17", 21);
-//			ftpClient.enterLocalPassiveMode();
+			ftpClient.connect(Constants.FTP_SERVER_ADDRESS, 21);
 			ftpClient.login("loumcgu", "apple123");
-//			System.out.println(ftpClient.getStatus());
-//			System.out.println(ftpClient.printWorkingDirectory());
 			ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
 
 			//Finds the file and gets the filename.
