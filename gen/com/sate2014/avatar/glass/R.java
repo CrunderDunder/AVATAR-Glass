@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.darrenvenn.glasscamerasnapshot;
+package com.sate2014.avatar.glass;
 
 public final class R {
     public static final class attr {
