@@ -3,105 +3,71 @@ package com.sate2014.avatar.glass;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 //This task uploads the media to the ftp server in the background
 public class UploadHttpPost extends AsyncTask<String, String, String> {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private HttpEntity resEntity;
 
 	public String doInBackground(String... params) {
-		HttpClient httpclient = new DefaultHttpClient();
-		httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-		
-		HttpPost httppost = new HttpPost("http://10.0.3.17/scripts/glass/uploadglassmedia.php");
-		File file = new File(params[0]);
-		
-		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		
-		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-		
-		FileBody fileBody = new FileBody(file);
-		builder.addPart("file", fileBody);
-		
-		httppost.setEntity(builder.build());
-		Log.v(TAG, "Executing Http resquest " + httppost.getRequestLine());
+		Log.v(TAG, "In UploadHttpPost");
+		String filepath = params[0];
+		Log.v(TAG, "filepath: " +filepath);
+		File file =  new File(filepath);
+		if (file.exists()) {
+			Log.v(TAG, "file exists");
+		} else {
+			Log.v(TAG, "File doesn't exist");
+		}
+		String filename = file.getName();
+		Log.v(TAG, "filename: " + filename);
 		try {
-			Log.v(TAG, "trying http response");
-			HttpResponse response = httpclient.execute(httppost);
-			Log.v(TAG, "Getting http response");
-			resEntity = response.getEntity();
-			Log.v(TAG, "resEntity string: " + resEntity.toString());
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
+			HttpURLConnection httpUrlConnection = (HttpURLConnection)new URL("http://10.0.3.240/dev/postTestImage.php?filename="+filename).openConnection();
+			httpUrlConnection.setDoOutput(true);
+			httpUrlConnection.setRequestMethod("POST");
+			
+//			File file = new File("test.png");
+			long totalByte = file.length();
+			Log.v(TAG, "file length: " + totalByte);
+			
+			OutputStream os = httpUrlConnection.getOutputStream();
+			Thread.sleep(1000);
+			Log.v(TAG, "After sleep");
+			BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file));
+			
+			for (int i = 0; i < totalByte; i++) {
+				os.write(fis.read());
+			}
+			Log.v(TAG, "After writing");
+			
+			os.close();
+			
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(
+							httpUrlConnection.getInputStream()));
+			
+			String s = null;
+			while ((s = in.readLine()) != null) {
+				System.out.println(s);
+			}
+			in.close();
+			fis.close();
+		} catch (IOException e){
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
-//		try {
-//			resEntity.consumeContent();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		return null;
 		
-		httpclient.getConnectionManager().shutdown();
-		
-		
-//		MultipartEntity mpEntity = new MultipartEntity();
-		
-		
-		return params[0];
-		
-		
-		
-//		System.out.println("FTP START");
-//		Log.v(TAG, "Starting FTP upload");
-//		FTPClient ftpClient = new FTPClient();
-//		Log.d("HELP", ftpClient.toString());
-//		String retVal = params[0];
-//		try {
-//			//Connects and logs into the server
-//			ftpClient.connect("10.0.3.17", 21);
-////			ftpClient.enterLocalPassiveMode();
-//			ftpClient.login("loumcgu", "apple123");
-////			System.out.println(ftpClient.getStatus());
-////			System.out.println(ftpClient.printWorkingDirectory());
-//			ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
-//
-//			//Finds the file and gets the filename.
-//			File file = new File(params[0]);
-//			if (file.exists()) {
-//				Log.v(TAG, "File exists in UtoFTP");			
-//			}
-//			String objectName = file.getName();
-//			InputStream input = new FileInputStream(file);
-//			//Saves the file to the ftp server
-//			ftpClient.storeFile(objectName, input);
-//
-//			ftpClient.logout();
-//			ftpClient.disconnect();
-//
-//		} catch (IOException e) {
-//			System.out.println("WHOOPS");
-//			e.printStackTrace();
-//		}
-//		System.out.println("COMPLETE LOOPER");
-//		return retVal;
 	}
 }

@@ -3,7 +3,6 @@ package com.sate2014.avatar.glass;
 import java.io.File;
 import java.util.List;
 
-import com.darrenvenn.glasscamerasnapshot.R;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
@@ -24,6 +23,7 @@ import android.content.Intent;
 //This class prepares data to be sent to the SQL server
 public class UploadToSQL extends Activity {
 	
+	@SuppressWarnings("unused")
 	private static final String TAG = MainActivity.class.getSimpleName();
 
 	public String ptFilePath;
@@ -44,6 +44,7 @@ public class UploadToSQL extends Activity {
 	
 	private AudioManager mAudioManager;
 
+	@SuppressWarnings("unused")
 	private Context c;
 	
 	private final GestureDetector.BaseListener mBaseListener = new GestureDetector.BaseListener() {
@@ -160,8 +161,10 @@ public class UploadToSQL extends Activity {
 		//Do the thing to send things
 		MainActivity.HttpSender httpSender = new MainActivity.HttpSender();
 		httpSender.execute(tvPtName.getText().toString(), ptLat + "", ptLng + "", "0", fileNameOnFTP);
-		UploadToFTP ftp = new UploadToFTP();
-		ftp.execute(ptFilePath);
+//		UploadToFTP ftp = new UploadToFTP();
+		UploadHttpPost http = new UploadHttpPost();
+//		ftp.execute(ptFilePath);
+		http.execute(ptFilePath);
 		setResult(Activity.RESULT_OK);
 		finish();
 	}

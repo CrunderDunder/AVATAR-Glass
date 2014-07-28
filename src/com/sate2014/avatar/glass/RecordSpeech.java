@@ -2,8 +2,6 @@ package com.sate2014.avatar.glass;
 
 import java.util.ArrayList;
 
-import com.darrenvenn.glasscamerasnapshot.R;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
